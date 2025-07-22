@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zerodha API Documentation</title>
+  <style>
+    /* Reset & base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f5f7fa; color: #333; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; }
+    .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; height: 80vh; }
+    .card h2 { font-size: 1.25rem; margin-bottom: 8px; }
+    .method { display: inline-block; background: #e4e7eb; border-radius: 4px; padding: 2px 6px; font-size: 0.85rem; margin-bottom: 10px; }
+    .endpoint { font-family: monospace; display: block; margin-bottom: 12px; color: #1a73e8; }
+    pre { background: #f0f2f5; padding: 12px; border-radius: 6px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem; flex-grow: 1; }
+    .loading { font-style: italic; color: #777; }
+    @media (max-width: 600px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Zerodha API Live Endpoints</h1>
+  <div class="container" id="api-container"></div>
+
+  <script>
+    const baseUrl = 'https://zerodha-ay41.onrender.com';
+    const endpoints = [
+    {
+   title: 'User Wishlist',
+   method: 'GET',
+   path: '/api/wishlist/{user_id}',
+   desc: 'Wishlist for specific user',
+   params: { user_id: '20d0a1c7-d226-4404-8b02-34795d843ae2' }
+ },
+      {
+        title: 'Stock Details',
+        method: 'GET',
+        path: '/api/stocks/{symbol}',
+        desc: 'Detailed info for a stock symbol',
+        params: { symbol: 'INFY' }
+      },
+      {
+        title: 'Market Status',
+        method: 'GET',
+        path: '/api/market_status',
+        desc: 'Current market open/closed status'
+      },
+    ];
+
+    const container = document.getElementById('api-container');
+
+    endpoints.forEach(ep => {
+      const card = document.createElement('div'); card.className = 'card';
+      const title = document.createElement('h2'); title.textContent = ep.title;
+      const method = document.createElement('span'); method.className = 'method'; method.textContent = ep.method;
+      const endpoint = document.createElement('code'); endpoint.className = 'endpoint';
+      let fullPath = ep.path;
+      if (ep.params) {
+        Object.entries(ep.params).forEach(([k, v]) => {
+          fullPath = fullPath.replace(`{${k}}`, v);
+        });
+      }
+      endpoint.textContent = fullPath;
+
+      const desc = document.createElement('p'); desc.textContent = ep.desc;
+      const pre = document.createElement('pre');
+      const code = document.createElement('code'); code.textContent = 'Loading...'; code.className = 'loading';
+      pre.appendChild(code);
+
+      card.append(title, method, endpoint, desc, pre);
+      container.appendChild(card);
+
+      // Prepare fetch
+      let url = baseUrl + fullPath;
+      const options = { method: ep.method };
+      if (ep.method === 'POST') {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(ep.demoBody);
+      }
+
+      fetch(url, options)
+        .then(res => res.json().then(data => res.ok ? data : Promise.reject(data)))
+        .then(data => {
+          code.textContent = JSON.stringify(data, null, 2);
+          code.classList.remove('loading');
+        })
+        .catch(err => {
+          code.textContent = JSON.stringify(err, null, 2);
+          code.classList.remove('loading');
+        });
+    });
+  </script>
+</body>
+</html>
