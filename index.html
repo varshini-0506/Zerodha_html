@@ -25,6 +25,8 @@
   <pre id="ws-messages"></pre>
   <div class="container" id="api-container"></div>
 
+  <!-- Add Socket.IO client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     const baseUrl = 'https://zerodha-ay41.onrender.com';
     const endpoints = [
@@ -93,27 +95,29 @@
         });
     });
 
-    // WebSocket connection to backend
-    const wsUrl = 'wss://zerodha-ay41.onrender.com/ws';
-    let ws;
-    function connectWebSocket() {
-      ws = new WebSocket(wsUrl);
-      ws.onopen = function() {
-        console.log('WebSocket connected!');
-      };
-      ws.onmessage = function(event) {
-        console.log('WebSocket message:', event.data);
-        document.getElementById('ws-messages').textContent += event.data + '\n';
-      };
-      ws.onclose = function() {
-        console.log('WebSocket closed. Reconnecting in 3s...');
-        setTimeout(connectWebSocket, 3000);
-      };
-      ws.onerror = function(err) {
-        console.error('WebSocket error:', err);
-      };
-    }
-    connectWebSocket();
+    // Socket.IO connection to backend
+    const socket = io('https://zerodha-ay41.onrender.com', {
+      transports: ['websocket'],
+      secure: true
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connected!');
+    });
+
+    socket.on('market_status', (data) => {
+      console.log('Market status:', data);
+      document.getElementById('ws-messages').textContent += 'Market status: ' + JSON.stringify(data) + '\n';
+    });
+
+    socket.on('tick_data', (data) => {
+      console.log('Tick data:', data);
+      document.getElementById('ws-messages').textContent += 'Tick data: ' + JSON.stringify(data) + '\n';
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket.IO disconnected');
+    });
   </script>
 </body>
 </html>
