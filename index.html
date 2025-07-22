@@ -22,6 +22,7 @@
 </head>
 <body>
   <h1>Zerodha API Live Endpoints</h1>
+  <pre id="ws-messages"></pre>
   <div class="container" id="api-container"></div>
 
   <script>
@@ -91,6 +92,28 @@
           code.classList.remove('loading');
         });
     });
+
+    // WebSocket connection to backend
+    const wsUrl = 'wss://zerodha-ay41.onrender.com/ws';
+    let ws;
+    function connectWebSocket() {
+      ws = new WebSocket(wsUrl);
+      ws.onopen = function() {
+        console.log('WebSocket connected!');
+      };
+      ws.onmessage = function(event) {
+        console.log('WebSocket message:', event.data);
+        document.getElementById('ws-messages').textContent += event.data + '\n';
+      };
+      ws.onclose = function() {
+        console.log('WebSocket closed. Reconnecting in 3s...');
+        setTimeout(connectWebSocket, 3000);
+      };
+      ws.onerror = function(err) {
+        console.error('WebSocket error:', err);
+      };
+    }
+    connectWebSocket();
   </script>
 </body>
 </html>
