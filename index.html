@@ -1,123 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zerodha API Documentation</title>
-  <style>
-    /* Reset & base */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f5f7fa; color: #333; padding: 20px; }
-    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; }
-    .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; height: 80vh; }
-    .card h2 { font-size: 1.25rem; margin-bottom: 8px; }
-    .method { display: inline-block; background: #e4e7eb; border-radius: 4px; padding: 2px 6px; font-size: 0.85rem; margin-bottom: 10px; }
-    .endpoint { font-family: monospace; display: block; margin-bottom: 12px; color: #1a73e8; }
-    pre { background: #f0f2f5; padding: 12px; border-radius: 6px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem; flex-grow: 1; }
-    .loading { font-style: italic; color: #777; }
-    @media (max-width: 600px) { .container { grid-template-columns: 1fr; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Display Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100vw;
+            margin: 0 auto;
+            padding: 32px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .section {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .section h2 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        .stock-item {
+            background-color: #333;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #0088ff;
+        }
+        .stock-symbol {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .stock-price {
+            font-size: 1.1em;
+            color: #ffffff;
+        }
+        .stock-change {
+            font-size: 0.9em;
+        }
+        .positive { color: #00ff88; }
+        .negative { color: #ff4444; }
+        .news-item, .event-item {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 4px solid #ff8800;
+        }
+        .news-title, .event-title {
+            font-weight: bold;
+            color: #00aaff;
+        }
+        .news-source, .event-date {
+            color: #888;
+            font-size: 0.8em;
+        }
+        .controls {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #0088ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0066cc;
+        }
+        .status {
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .connected { color: #00ff88; }
+        .disconnected { color: #ff4444; }
+        .user-input {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .user-input input {
+            background-color: #333;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .user-input button {
+            background-color: #00ff88;
+            color: #1a1a1a;
+        }
+        .user-input button:hover {
+            background-color: #00cc6a;
+        }
+    </style>
 </head>
 <body>
-  <h1>Zerodha API Live Endpoints</h1>
-  <pre id="ws-messages"></pre>
-  <div class="container" id="api-container"></div>
+    <h1>Stock Display Test Client</h1>
+    
+    <div class="status">
+        <strong>Server Status:</strong> <span id="serverStatus" class="disconnected">Disconnected</span> |
+        <strong>Socket.IO:</strong> <span id="socketStatus" class="disconnected">Disconnected</span>
+    </div>
+    
+    <div class="controls">
+        <button onclick="connectSocketIO()">Connect to WebSocket</button>
+        <button onclick="fetchWishlistStocks()">Fetch Wishlist</button>
+        <button onclick="fetchNews()">Fetch News</button>
+    </div>
+    
+    <div class="user-input">
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" placeholder="Enter user ID" value="20d0a1c7-d226-4404-8b02-34795d843ae2">
+    </div>
+    
+    <div id="wishlistSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
+        <div id="wishlistNamesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+            <h3 style="color:#00ff88; font-size:1.5em;">Wishlist Stocks</h3>
+            <div id="wishlistNames"></div>
+        </div>
+        <div id="wishlistDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+            <h3 style="color:#00aaff; font-size:1.5em;">Stock Details</h3>
+            <div id="wishlistDetails" style="min-height:100px;">Select a stock to view details.</div>
+        </div>
+    </div>
+    <div id="newsSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
+        <div id="newsTitlesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+            <h3 style="color:#ff8800; font-size:1.5em;">News Titles</h3>
+            <div id="newsTitles"></div>
+        </div>
+        <div id="newsDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+            <h3 style="color:#00aaff; font-size:1.5em;">News Details</h3>
+            <div id="newsDetails" style="min-height:100px;">Select a news title to view details.</div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+<script>
+    const SERVER_URL ='https://zerodha-ay41.onrender.com';
+    
+    // Check server status
+    async function checkServerStatus() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/stocks`);
+            if (response.ok) {
+                document.getElementById('serverStatus').textContent = 'Connected';
+                document.getElementById('serverStatus').className = 'connected';
+            } else {
+                throw new Error('Server error');
+            }
+        } catch (error) {
+            document.getElementById('serverStatus').textContent = 'Disconnected';
+            document.getElementById('serverStatus').className = 'disconnected';
+        }
+    }
+    
+    // Socket.IO connection
+    let socket = null;
+    
+    function connectSocketIO() {
+        if (socket) {
+            socket.disconnect();
+        }
+        
+        console.log('Attempting to connect to Socket.IO server...');
+        document.getElementById('socketStatus').textContent = 'Connecting...';
+        document.getElementById('socketStatus').className = 'disconnected';
+        
+        try {
+            socket = io(SERVER_URL, {
+                transports: ['websocket', 'polling'],
+                timeout: 20000,
+                forceNew: true,
+                reconnection: true,
+                reconnectionAttempts: 3,
+                reconnectionDelay: 1000,
+                autoConnect: true
+            });
+            
+            socket.on('connect', function() {
+                document.getElementById('socketStatus').textContent = 'Connected';
+                document.getElementById('socketStatus').className = 'connected';
+                console.log('Socket.IO connected successfully!');
+                console.log('Socket ID:', socket.id);
+            });
+            
+            socket.on('disconnect', function(reason) {
+                document.getElementById('socketStatus').textContent = 'Disconnected';
+                document.getElementById('socketStatus').className = 'disconnected';
+                console.log('Socket.IO disconnected. Reason:', reason);
+            });
+            
+            socket.on('connect_error', function(error) {
+                console.error('Socket.IO connection error:', error);
+                document.getElementById('socketStatus').textContent = 'Connection Failed';
+                document.getElementById('socketStatus').className = 'disconnected';
+            });
+            
+            socket.on('reconnect_attempt', function(attemptNumber) {
+                console.log('Reconnection attempt:', attemptNumber);
+            });
+            
+            socket.on('reconnect_failed', function() {
+                console.log('Reconnection failed');
+                document.getElementById('socketStatus').textContent = 'Reconnection Failed';
+            });
+            
+            // Listen for tick data from the backend
+            socket.on('tick_data', function(data) {
+                console.log('Received tick data:', data);
+                if (data && data.data) {
+                    // displayTickData(data.data); // This function is removed
+                }
+            });
+            
+            // Listen for market status updates
+            socket.on('market_status', function(data) {
+                console.log('Market status:', data);
+            });
+            
+        } catch (error) {
+            console.error('Error creating Socket.IO connection:', error);
+            document.getElementById('socketStatus').textContent = 'Connection Failed';
+            document.getElementById('socketStatus').className = 'disconnected';
+        }
+    }
+    
+    // Display real-time tick data
+    // function displayTickData(ticks) { // This function is removed
+    //     const container = document.getElementById('tickContainer');
+        
+    //     if (!ticks || ticks.length === 0) {
+    //         container.innerHTML = '<p>No tick data available.</p>';
+    //         return;
+    //     }
+        
+    //     const recentTicks = ticks.slice(-10);
+        
+    //     container.innerHTML = recentTicks.map(tick => {
+    //         const symbol = tick.symbol || tick.tradingsymbol || 'N/A';
+    //         const price = tick.last_price || tick.ltp || 0;
+    //         const change = tick.change || 0;
+    //         const volume = tick.volume || 0;
+            
+    //         return `
+    //             <div class="tick-item">
+    //                 <strong>${symbol}</strong>: $${parseFloat(price).toFixed(2)} 
+    //                 <span class="${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
+    //                     (${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)})
+    //                 </span>
+    //                 | Vol: ${parseInt(volume).toLocaleString()}
+    //             </div>
+    //         `;
+    //     }).join('');
+    // }
+    
+    let wishlistStocks = [];
 
-  <!-- Add Socket.IO client -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script>
-    const baseUrl = 'https://zerodha-ay41.onrender.com';
-    const endpoints = [
-    {
-   title: 'User Wishlist',
-   method: 'GET',
-   path: '/api/wishlist/{user_id}',
-   desc: 'Wishlist for specific user',
-   params: { user_id: '20d0a1c7-d226-4404-8b02-34795d843ae2' }
- },
-      {
-        title: 'Stock Details',
-        method: 'GET',
-        path: '/api/stocks/{symbol}',
-        desc: 'Detailed info for a stock symbol',
-        params: { symbol: 'INFY' }
-      },
-      {
-        title: 'Market Status',
-        method: 'GET',
-        path: '/api/market_status',
-        desc: 'Current market open/closed status'
-      },
-    ];
+    // Fetch wishlist stocks for specific user
+    async function fetchWishlistStocks() {
+        const userId = document.getElementById('userId').value;
+        if (!userId) {
+            alert('Please enter a User ID');
+            return;
+        }
+        try {
+            const response = await fetch(`${SERVER_URL}/api/wishlist/details/${userId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            if (data && data.stock_details && data.stock_details.length > 0) {
+                wishlistStocks = data.stock_details;
+                displayWishlistNames(wishlistStocks);
+                document.getElementById('wishlistSection').style.display = 'flex';
+                document.getElementById('wishlistDetails').innerHTML = 'Select a stock to view details.';
+            } else {
+                document.getElementById('wishlistSection').style.display = 'none';
+                alert('No wishlist stocks found for this user.');
+            }
+        } catch (error) {
+            console.error('Error fetching wishlist stocks:', error);
+            document.getElementById('wishlistSection').style.display = 'none';
+            alert('Error loading wishlist stocks');
+        }
+    }
 
-    const container = document.getElementById('api-container');
-
-    endpoints.forEach(ep => {
-      const card = document.createElement('div'); card.className = 'card';
-      const title = document.createElement('h2'); title.textContent = ep.title;
-      const method = document.createElement('span'); method.className = 'method'; method.textContent = ep.method;
-      const endpoint = document.createElement('code'); endpoint.className = 'endpoint';
-      let fullPath = ep.path;
-      if (ep.params) {
-        Object.entries(ep.params).forEach(([k, v]) => {
-          fullPath = fullPath.replace(`{${k}}`, v);
+    function displayWishlistNames(stocks) {
+        const container = document.getElementById('wishlistNames');
+        container.innerHTML = '';
+        stocks.forEach((stock, idx) => {
+            const symbol = stock.symbol || stock.stockSymbol || 'N/A';
+            const name = stock.name || 'N/A';
+            const btn = document.createElement('button');
+            btn.textContent = `${symbol} - ${name}`;
+            btn.style.display = 'block';
+            btn.style.width = '100%';
+            btn.style.marginBottom = '10px';
+            btn.style.background = '#333';
+            btn.style.color = '#00ff88';
+            btn.style.border = '1px solid #444';
+            btn.style.borderRadius = '4px';
+            btn.style.padding = '10px';
+            btn.style.cursor = 'pointer';
+            btn.onmouseover = () => btn.style.background = '#444';
+            btn.onmouseout = () => btn.style.background = '#333';
+            btn.onclick = () => displayWishlistDetails(idx);
+            container.appendChild(btn);
         });
-      }
-      endpoint.textContent = fullPath;
+    }
 
-      const desc = document.createElement('p'); desc.textContent = ep.desc;
-      const pre = document.createElement('pre');
-      const code = document.createElement('code'); code.textContent = 'Loading...'; code.className = 'loading';
-      pre.appendChild(code);
+    function displayWishlistDetails(idx) {
+        const stock = wishlistStocks[idx];
+        if (!stock) return;
+        const symbol = stock.symbol || stock.stockSymbol || 'N/A';
+        const name = stock.name || 'N/A';
+        let price = 0, change = 0, changePercent = 0, volume = 0;
+        if (stock.quote) {
+            price = stock.quote.last_price || stock.quote.ltp || 0;
+            change = stock.quote.change || 0;
+            changePercent = stock.quote.change_percent || 0;
+            volume = stock.quote.volume || 0;
+        }
+        document.getElementById('wishlistDetails').innerHTML = `
+            <div style="font-size:1.3em; font-weight:bold; color:#00ff88;">${symbol}</div>
+            <div style="color:#aaa; margin-bottom:8px;">${name}</div>
+            <div style="font-size:1.1em; color:#fff;">$${parseFloat(price).toFixed(2)}</div>
+            <div style="font-size:1em; margin:8px 0; color:${parseFloat(change) >= 0 ? '#00ff88' : '#ff4444'};">
+                ${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)} (${parseFloat(changePercent).toFixed(2)}%)
+            </div>
+            <div style="font-size:0.9em; color:#888;">Volume: ${parseInt(volume).toLocaleString()}</div>
+        `;
+    }
+    
+    let newsList = [];
 
-      card.append(title, method, endpoint, desc, pre);
-      container.appendChild(card);
+    async function fetchNews() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/news`);
+            const data = await response.json();
+            if (data && data.news && data.news.length > 0) {
+                newsList = data.news;
+                displayNewsTitles(newsList);
+                document.getElementById('newsSection').style.display = 'flex';
+                document.getElementById('newsDetails').innerHTML = 'Select a news title to view details.';
+            } else {
+                document.getElementById('newsSection').style.display = 'none';
+                alert('No news found.');
+            }
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            document.getElementById('newsSection').style.display = 'none';
+            alert('Error loading news');
+        }
+    }
 
-      // Prepare fetch
-      let url = baseUrl + fullPath;
-      const options = { method: ep.method };
-      if (ep.method === 'POST') {
-        options.headers = { 'Content-Type': 'application/json' };
-        options.body = JSON.stringify(ep.demoBody);
-      }
-
-      fetch(url, options)
-        .then(res => res.json().then(data => res.ok ? data : Promise.reject(data)))
-        .then(data => {
-          code.textContent = JSON.stringify(data, null, 2);
-          code.classList.remove('loading');
-        })
-        .catch(err => {
-          code.textContent = JSON.stringify(err, null, 2);
-          code.classList.remove('loading');
+    function displayNewsTitles(newsArr) {
+        const container = document.getElementById('newsTitles');
+        container.innerHTML = '';
+        newsArr.forEach((item, idx) => {
+            const btn = document.createElement('button');
+            btn.textContent = item.title || 'Untitled';
+            btn.style.display = 'block';
+            btn.style.width = '100%';
+            btn.style.marginBottom = '10px';
+            btn.style.background = '#333';
+            btn.style.color = '#ff8800';
+            btn.style.border = '1px solid #444';
+            btn.style.borderRadius = '4px';
+            btn.style.padding = '10px';
+            btn.style.cursor = 'pointer';
+            btn.onmouseover = () => btn.style.background = '#444';
+            btn.onmouseout = () => btn.style.background = '#333';
+            btn.onclick = () => displayNewsDetails(idx);
+            container.appendChild(btn);
         });
-    });
+    }
 
-    // Socket.IO connection to backend
-    const socket = io('https://zerodha-ay41.onrender.com', {
-      transports: ['websocket'],
-      secure: true
-    });
-
-    socket.on('connect', () => {
-      console.log('Socket.IO connected!');
-    });
-
-    socket.on('market_status', (data) => {
-      console.log('Market status:', data);
-      document.getElementById('ws-messages').textContent += 'Market status: ' + JSON.stringify(data) + '\n';
-    });
-
-    socket.on('tick_data', (data) => {
-      console.log('Tick data:', data);
-      document.getElementById('ws-messages').textContent += 'Tick data: ' + JSON.stringify(data) + '\n';
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket.IO disconnected');
-    });
-  </script>
+    function displayNewsDetails(idx) {
+        const item = newsList[idx];
+        if (!item) return;
+        document.getElementById('newsDetails').innerHTML = `
+            <div style="font-size:1.1em; font-weight:bold; color:#ff8800; margin-bottom:8px;">${item.title}</div>
+            <div style="color:#aaa; margin-bottom:8px;">${item.source || ''}</div>
+            <div style="color:#fff;">${item.description || ''}</div>
+        `;
+    }
+    
+    // Fetch stocks
+    async function fetchStocks() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/stocks`);
+            const data = await response.json();
+            if (data && data.stocks) {
+                displayStocks(data.stocks);
+            } else {
+                displayStocks(data);
+            }
+        } catch (error) {
+            console.error('Error fetching stocks:', error);
+            document.getElementById('stocksContainer').innerHTML = '<p style="color: #ff4444;">Error loading stocks</p>';
+            }
+    }
+    
+    // Display stocks
+    function displayStocks(stocks) {
+        const container = document.getElementById('stocksContainer');
+        
+        if (!stocks || stocks.length === 0) {
+            container.innerHTML = '<p>No stocks available.</p>';
+            return;
+        }
+        
+        container.innerHTML = stocks.map(stock => {
+            const symbol = stock.symbol || stock.stockSymbol || 'N/A';
+            const name = stock.name || 'N/A';
+            
+            let price = 0, change = 0, changePercent = 0, volume = 0;
+            
+            if (stock.quote) {
+                price = stock.quote.last_price || stock.quote.ltp || 0;
+                change = stock.quote.change || 0;
+                changePercent = stock.quote.change_percent || 0;
+                volume = stock.quote.volume || 0;
+            }
+            
+            return `
+                <div class="stock-item">
+                    <div class="stock-symbol">${symbol}</div>
+                    <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">${name}</div>
+                    <div class="stock-price">$${parseFloat(price).toFixed(2)}</div>
+                    <div class="stock-change ${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
+                        ${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)} (${parseFloat(changePercent).toFixed(2)}%)
+                    </div>
+                    <div style="font-size: 0.8em; color: #888; margin-top: 5px;">
+                        Volume: ${parseInt(volume).toLocaleString()}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Display news
+    function displayNews(news) {
+        const container = document.getElementById('newsContainer');
+        container.innerHTML = news.map(item => `
+            <div class="news-item">
+                <div class="news-title">${item.title}</div>
+                <div class="news-source">${item.source} - ${item.pubDate}</div>
+                <div style="margin-top: 5px; font-size: 0.9em;">${item.description.substring(0, 100)}...</div>
+            </div>
+        `).join('');
+    }
+    
+    function clearData() {
+        document.getElementById('stocksContainer').innerHTML = '<p>Data cleared.</p>';
+        document.getElementById('newsContainer').innerHTML = '<p>Data cleared.</p>';
+        // document.getElementById('tickContainer').innerHTML = '<p>Click "Connect Socket.IO" to receive real-time data...</p>'; // This line is removed
+    }
+    
+    // Initialize
+    checkServerStatus();
+    setInterval(checkServerStatus, 5000);
+</script>
 </body>
 </html>
