@@ -1,488 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Display Test Client</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 100vw;
-            margin: 0 auto;
-            padding: 32px;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .section {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #444;
-        }
-        .section h2 {
-            color: #00ff88;
-            margin-top: 0;
-        }
-        .stock-item {
-            background-color: #333;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border-left: 4px solid #0088ff;
-        }
-        .stock-symbol {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #00ff88;
-        }
-        .stock-price {
-            font-size: 1.1em;
-            color: #ffffff;
-        }
-        .stock-change {
-            font-size: 0.9em;
-        }
-        .positive { color: #00ff88; }
-        .negative { color: #ff4444; }
-        .news-item, .event-item {
-            background-color: #333;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            border-left: 4px solid #ff8800;
-        }
-        .news-title, .event-title {
-            font-weight: bold;
-            color: #00aaff;
-        }
-        .news-source, .event-date {
-            color: #888;
-            font-size: 0.8em;
-        }
-        .controls {
-            background-color: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        button {
-            background-color: #0088ff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0066cc;
-        }
-        .status {
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .connected { color: #00ff88; }
-        .disconnected { color: #ff4444; }
-        .user-input {
-            background-color: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .user-input input {
-            background-color: #333;
-            color: white;
-            border: 1px solid #444;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        .user-input button {
-            background-color: #00ff88;
-            color: #1a1a1a;
-        }
-        .user-input button:hover {
-            background-color: #00cc6a;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Display Test Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 100vw;
+      margin: 0 auto;
+      padding: 32px;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .section {
+      background-color: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #444;
+    }
+    .section h2 {
+      color: #00ff88;
+      margin-top: 0;
+    }
+    .stock-item {
+      background-color: #333;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border-left: 4px solid #0088ff;
+    }
+    .positive { color: #00ff88; }
+    .negative { color: #ff4444; }
+    .news-item, .event-item {
+      background-color: #333;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      border-left: 4px solid #ff8800;
+    }
+    .news-title, .event-title {
+      font-weight: bold;
+      color: #00aaff;
+    }
+    .news-source, .event-date {
+      color: #888;
+      font-size: 0.8em;
+    }
+    .controls {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #0088ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0066cc;
+    }
+    .status {
+      background-color: #2a2a2a;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .connected { color: #00ff88; }
+    .disconnected { color: #ff4444; }
+    .user-input {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .user-input input {
+      background-color: #333;
+      color: white;
+      border: 1px solid #444;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .user-input button {
+      background-color: #00ff88;
+      color: #1a1a1a;
+    }
+    .user-input button:hover {
+      background-color: #00cc6a;
+    }
+  </style>
 </head>
 <body>
-    <h1>Stock Display Test Client</h1>
-    
-    <div class="status">
-        <strong>Server Status:</strong> <span id="serverStatus" class="disconnected">Disconnected</span> |
-        <strong>Socket.IO:</strong> <span id="socketStatus" class="disconnected">Disconnected</span>
+  <h1>Stock Display Test Client</h1>
+
+  <div class="status">
+    <strong>Server Status:</strong> <span id="serverStatus" class="disconnected">Disconnected</span> |
+    <strong>Socket.IO:</strong> <span id="socketStatus" class="disconnected">Disconnected</span>
+  </div>
+
+  <div class="controls">
+    <button onclick="connectSocketIO()">Connect to WebSocket</button>
+    <button onclick="fetchWishlistStocks()">Fetch Wishlist</button>
+    <button onclick="fetchNews()">Fetch News</button>
+  </div>
+
+  <div class="user-input">
+    <label for="userId">User ID:</label>
+    <input type="text" id="userId" placeholder="Enter user ID" value="20d0a1c7-d226-4404-8b02-34795d843ae2">
+  </div>
+
+  <!-- ✅ UPDATED WISHLIST SECTION -->
+  <div id="wishlistSection" style="display:none; margin-top: 30px;">
+    <div style="background:#222; padding:32px; border-radius:12px; height:60vh; overflow-y:auto;">
+      <h3 style="color:#00ff88; font-size:1.5em;">Wishlist Stocks & Details</h3>
+      <div id="wishlistCombinedDetails"></div>
     </div>
-    
-    <div class="controls">
-        <button onclick="connectSocketIO()">Connect to WebSocket</button>
-        <button onclick="fetchWishlistStocks()">Fetch Wishlist</button>
-        <button onclick="fetchNews()">Fetch News</button>
+  </div>
+
+  <!-- News Section (unchanged) -->
+  <div id="newsSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
+    <div id="newsTitlesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+      <h3 style="color:#ff8800; font-size:1.5em;">News Titles</h3>
+      <div id="newsTitles"></div>
     </div>
-    
-    <div class="user-input">
-        <label for="userId">User ID:</label>
-        <input type="text" id="userId" placeholder="Enter user ID" value="20d0a1c7-d226-4404-8b02-34795d843ae2">
+    <div id="newsDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
+      <h3 style="color:#00aaff; font-size:1.5em;">News Details</h3>
+      <div id="newsDetails" style="min-height:100px;">Select a news title to view details.</div>
     </div>
-    
-    <div id="wishlistSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
-        <div id="wishlistNamesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-            <h3 style="color:#00ff88; font-size:1.5em;">Wishlist Stocks</h3>
-            <div id="wishlistNames"></div>
-        </div>
-        <div id="wishlistDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-            <h3 style="color:#00aaff; font-size:1.5em;">Stock Details</h3>
-            <div id="wishlistDetails" style="min-height:100px;">Select a stock to view details.</div>
-        </div>
-    </div>
-    <div id="newsSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
-        <div id="newsTitlesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-            <h3 style="color:#ff8800; font-size:1.5em;">News Titles</h3>
-            <div id="newsTitles"></div>
-        </div>
-        <div id="newsDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-            <h3 style="color:#00aaff; font-size:1.5em;">News Details</h3>
-            <div id="newsDetails" style="min-height:100px;">Select a news title to view details.</div>
-        </div>
-    </div>
-    
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
-<script>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <script>
     const SERVER_URL ='https://zerodha-ay41.onrender.com';
-    
-    // Check server status
-    async function checkServerStatus() {
-        try {
-            const response = await fetch(`${SERVER_URL}/api/stocks`);
-            if (response.ok) {
-                document.getElementById('serverStatus').textContent = 'Connected';
-                document.getElementById('serverStatus').className = 'connected';
-            } else {
-                throw new Error('Server error');
-            }
-        } catch (error) {
-            document.getElementById('serverStatus').textContent = 'Disconnected';
-            document.getElementById('serverStatus').className = 'disconnected';
-        }
-    }
-    
-    // Socket.IO connection
+
     let socket = null;
-    
-    function connectSocketIO() {
-        if (socket) {
-            socket.disconnect();
-        }
-        
-        console.log('Attempting to connect to Socket.IO server...');
-        document.getElementById('socketStatus').textContent = 'Connecting...';
-        document.getElementById('socketStatus').className = 'disconnected';
-        
-        try {
-            socket = io(SERVER_URL, {
-                transports: ['websocket', 'polling'],
-                timeout: 20000,
-                forceNew: true,
-                reconnection: true,
-                reconnectionAttempts: 3,
-                reconnectionDelay: 1000,
-                autoConnect: true
-            });
-            
-            socket.on('connect', function() {
-                document.getElementById('socketStatus').textContent = 'Connected';
-                document.getElementById('socketStatus').className = 'connected';
-                console.log('Socket.IO connected successfully!');
-                console.log('Socket ID:', socket.id);
-            });
-            
-            socket.on('disconnect', function(reason) {
-                document.getElementById('socketStatus').textContent = 'Disconnected';
-                document.getElementById('socketStatus').className = 'disconnected';
-                console.log('Socket.IO disconnected. Reason:', reason);
-            });
-            
-            socket.on('connect_error', function(error) {
-                console.error('Socket.IO connection error:', error);
-                document.getElementById('socketStatus').textContent = 'Connection Failed';
-                document.getElementById('socketStatus').className = 'disconnected';
-            });
-            
-            socket.on('reconnect_attempt', function(attemptNumber) {
-                console.log('Reconnection attempt:', attemptNumber);
-            });
-            
-            socket.on('reconnect_failed', function() {
-                console.log('Reconnection failed');
-                document.getElementById('socketStatus').textContent = 'Reconnection Failed';
-            });
-            
-            // Listen for tick data from the backend
-            socket.on('tick_data', function(data) {
-                console.log('Received tick data:', data);
-                if (data && data.data) {
-                    // displayTickData(data.data); // This function is removed
-                }
-            });
-            
-            // Listen for market status updates
-            socket.on('market_status', function(data) {
-                console.log('Market status:', data);
-            });
-            
-        } catch (error) {
-            console.error('Error creating Socket.IO connection:', error);
-            document.getElementById('socketStatus').textContent = 'Connection Failed';
-            document.getElementById('socketStatus').className = 'disconnected';
-        }
-    }
-    
-    // Display real-time tick data
-    // function displayTickData(ticks) { // This function is removed
-    //     const container = document.getElementById('tickContainer');
-        
-    //     if (!ticks || ticks.length === 0) {
-    //         container.innerHTML = '<p>No tick data available.</p>';
-    //         return;
-    //     }
-        
-    //     const recentTicks = ticks.slice(-10);
-        
-    //     container.innerHTML = recentTicks.map(tick => {
-    //         const symbol = tick.symbol || tick.tradingsymbol || 'N/A';
-    //         const price = tick.last_price || tick.ltp || 0;
-    //         const change = tick.change || 0;
-    //         const volume = tick.volume || 0;
-            
-    //         return `
-    //             <div class="tick-item">
-    //                 <strong>${symbol}</strong>: $${parseFloat(price).toFixed(2)} 
-    //                 <span class="${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
-    //                     (${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)})
-    //                 </span>
-    //                 | Vol: ${parseInt(volume).toLocaleString()}
-    //             </div>
-    //         `;
-    //     }).join('');
-    // }
-    
     let wishlistStocks = [];
 
-    // Fetch wishlist stocks for specific user
+    async function checkServerStatus() {
+      try {
+        const response = await fetch(`${SERVER_URL}/api/stocks`);
+        if (response.ok) {
+          document.getElementById('serverStatus').textContent = 'Connected';
+          document.getElementById('serverStatus').className = 'connected';
+        } else throw new Error('Server error');
+      } catch (error) {
+        document.getElementById('serverStatus').textContent = 'Disconnected';
+        document.getElementById('serverStatus').className = 'disconnected';
+      }
+    }
+
+    function connectSocketIO() {
+      if (socket) socket.disconnect();
+
+      document.getElementById('socketStatus').textContent = 'Connecting...';
+      document.getElementById('socketStatus').className = 'disconnected';
+
+      try {
+        socket = io(SERVER_URL, {
+          transports: ['websocket', 'polling'],
+          timeout: 20000,
+          forceNew: true,
+          reconnection: true,
+          reconnectionAttempts: 3,
+          reconnectionDelay: 1000,
+          autoConnect: true
+        });
+
+        socket.on('connect', function () {
+          document.getElementById('socketStatus').textContent = 'Connected';
+          document.getElementById('socketStatus').className = 'connected';
+          console.log('✅ Socket.IO connected');
+        });
+
+        socket.on('disconnect', function () {
+          document.getElementById('socketStatus').textContent = 'Disconnected';
+          document.getElementById('socketStatus').className = 'disconnected';
+        });
+
+        socket.on('connect_error', function () {
+          document.getElementById('socketStatus').textContent = 'Connection Failed';
+          document.getElementById('socketStatus').className = 'disconnected';
+        });
+
+        socket.on('market_status', function (data) {
+          console.log('Market status:', data);
+        });
+
+        // ✅ Listen for all events to debug unknown ones
+        socket.onAny((event, data) => {
+          console.log('📡 Event received:', event, data);
+        });
+
+        // Listen for live tick_data updates and update UI
+        socket.on('tick_data', function (payload) {
+          // payload.data is the array of live stock data
+          if (!Array.isArray(payload.data)) return;
+
+          // Debug: log all wishlist symbols and all tick symbols
+          console.log('Wishlist symbols:', wishlistStocks.map(s => s.symbol));
+          console.log('Tick symbols:', payload.data.map(t => t.symbol));
+
+          // Update each wishlist stock with the latest tick info
+          wishlistStocks.forEach((stock, idx) => {
+            // Find the tick for this stock symbol (case-insensitive match for robustness)
+            const tick = payload.data.find(t => t.symbol && t.symbol.toUpperCase() === stock.symbol.toUpperCase());
+            if (tick) {
+              wishlistStocks[idx].quote = {
+                last_price: tick.last_price,
+                change: tick.change,
+                change_percent: stock.quote?.change_percent ?? null, // Keep previous if needed
+                volume: tick.volume,
+                high: tick.high,
+                low: tick.low,
+                open: tick.open,
+                close: tick.close
+              };
+              // Debug: log the update
+              console.log(`Updating ${stock.symbol}:`, wishlistStocks[idx].quote);
+            } else {
+              // Debug: log if not found
+              console.log(`No tick found for ${stock.symbol}`);
+            }
+          });
+
+          // Re-render the wishlist card with updated data
+          renderWishlistCard(wishlistStocks);
+        });
+
+      } catch (error) {
+        document.getElementById('socketStatus').textContent = 'Connection Failed';
+      }
+    }
+
     async function fetchWishlistStocks() {
-        const userId = document.getElementById('userId').value;
-        if (!userId) {
-            alert('Please enter a User ID');
-            return;
+      const userId = document.getElementById('userId').value;
+      if (!userId) {
+        alert('Please enter a User ID');
+        return;
+      }
+      try {
+        const response = await fetch(`${SERVER_URL}/api/wishlist/details/${userId}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        if (data && data.stock_details && data.stock_details.length > 0) {
+          wishlistStocks = data.stock_details;
+          renderWishlistCard(wishlistStocks); // Ensure UI is initialized
+          document.getElementById('wishlistSection').style.display = 'block';
+        } else {
+          document.getElementById('wishlistSection').style.display = 'none';
+          alert('No wishlist stocks found for this user.');
         }
-        try {
-            const response = await fetch(`${SERVER_URL}/api/wishlist/details/${userId}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            if (data && data.stock_details && data.stock_details.length > 0) {
-                wishlistStocks = data.stock_details;
-                displayWishlistNames(wishlistStocks);
-                document.getElementById('wishlistSection').style.display = 'flex';
-                document.getElementById('wishlistDetails').innerHTML = 'Select a stock to view details.';
-            } else {
-                document.getElementById('wishlistSection').style.display = 'none';
-                alert('No wishlist stocks found for this user.');
-            }
-        } catch (error) {
-            console.error('Error fetching wishlist stocks:', error);
-            document.getElementById('wishlistSection').style.display = 'none';
-            alert('Error loading wishlist stocks');
-        }
+      } catch (error) {
+        console.error('Error fetching wishlist stocks:', error);
+        document.getElementById('wishlistSection').style.display = 'none';
+        alert('Error loading wishlist stocks');
+      }
     }
 
-    function displayWishlistNames(stocks) {
-        const container = document.getElementById('wishlistNames');
-        container.innerHTML = '';
-        stocks.forEach((stock, idx) => {
-            const symbol = stock.symbol || stock.stockSymbol || 'N/A';
-            const name = stock.name || 'N/A';
-            const btn = document.createElement('button');
-            btn.textContent = `${symbol} - ${name}`;
-            btn.style.display = 'block';
-            btn.style.width = '100%';
-            btn.style.marginBottom = '10px';
-            btn.style.background = '#333';
-            btn.style.color = '#00ff88';
-            btn.style.border = '1px solid #444';
-            btn.style.borderRadius = '4px';
-            btn.style.padding = '10px';
-            btn.style.cursor = 'pointer';
-            btn.onmouseover = () => btn.style.background = '#444';
-            btn.onmouseout = () => btn.style.background = '#333';
-            btn.onclick = () => displayWishlistDetails(idx);
-            container.appendChild(btn);
-        });
-    }
+    function renderWishlistCard(wishlistDetails) {
+      const container = document.getElementById('wishlistCombinedDetails');
+      container.innerHTML = '';
 
-    function displayWishlistDetails(idx) {
-        const stock = wishlistStocks[idx];
-        if (!stock) return;
-        const symbol = stock.symbol || stock.stockSymbol || 'N/A';
-        const name = stock.name || 'N/A';
-        let price = 0, change = 0, changePercent = 0, volume = 0;
-        if (stock.quote) {
-            price = stock.quote.last_price || stock.quote.ltp || 0;
-            change = stock.quote.change || 0;
-            changePercent = stock.quote.change_percent || 0;
-            volume = stock.quote.volume || 0;
-        }
-        document.getElementById('wishlistDetails').innerHTML = `
-            <div style="font-size:1.3em; font-weight:bold; color:#00ff88;">${symbol}</div>
-            <div style="color:#aaa; margin-bottom:8px;">${name}</div>
-            <div style="font-size:1.1em; color:#fff;">$${parseFloat(price).toFixed(2)}</div>
-            <div style="font-size:1em; margin:8px 0; color:${parseFloat(change) >= 0 ? '#00ff88' : '#ff4444'};">
-                ${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)} (${parseFloat(changePercent).toFixed(2)}%)
-            </div>
-            <div style="font-size:0.9em; color:#888;">Volume: ${parseInt(volume).toLocaleString()}</div>
+      if (wishlistDetails.length === 0) {
+        container.innerHTML = '<p>No stocks in wishlist.</p>';
+        return;
+      }
+
+      wishlistDetails.forEach(stock => {
+        const stockDiv = document.createElement('div');
+        stockDiv.style.marginBottom = '20px';
+
+        const lastPrice = stock.quote?.last_price ?? 'N/A';
+        const change = stock.quote?.change ?? 'N/A';
+        const changePercent = stock.quote?.change_percent?.toFixed(2) ?? 'N/A';
+        const volume = stock.quote?.volume?.toLocaleString() ?? 'N/A';
+        const high = stock.quote?.high ?? stock.high ?? 'N/A';
+        const low = stock.quote?.low ?? stock.low ?? 'N/A';
+        const open = stock.quote?.open ?? stock.open ?? 'N/A';
+        const close = stock.quote?.close ?? stock.close ?? 'N/A';
+        const changeColor = typeof stock.quote?.change === 'number' ? (stock.quote.change >= 0 ? '#00ff88' : '#ff4444') : '#fff';
+
+        stockDiv.innerHTML = `
+          <div style="border-left: 4px solid #0088ff; padding-left: 12px;">
+            <strong style="font-size: 1.1em;">${stock.symbol} - ${stock.name}</strong><br>
+            Price: ₹${lastPrice}<br>
+            <span style="color:${changeColor};">
+              Change: ${change} (${changePercent}%)
+            </span><br>
+            Volume: ${volume}<br>
+            High: ${high} | Low: ${low}<br>
+            Open: ${open} | Close: ${close}
+          </div>
+          <hr style="border-color: #444;">
         `;
-    }
-    
-    let newsList = [];
-
-    async function fetchNews() {
-        try {
-            const response = await fetch(`${SERVER_URL}/api/news`);
-            const data = await response.json();
-            if (data && data.news && data.news.length > 0) {
-                newsList = data.news;
-                displayNewsTitles(newsList);
-                document.getElementById('newsSection').style.display = 'flex';
-                document.getElementById('newsDetails').innerHTML = 'Select a news title to view details.';
-            } else {
-                document.getElementById('newsSection').style.display = 'none';
-                alert('No news found.');
-            }
-        } catch (error) {
-            console.error('Error fetching news:', error);
-            document.getElementById('newsSection').style.display = 'none';
-            alert('Error loading news');
-        }
+        container.appendChild(stockDiv);
+      });
     }
 
-    function displayNewsTitles(newsArr) {
-        const container = document.getElementById('newsTitles');
-        container.innerHTML = '';
-        newsArr.forEach((item, idx) => {
-            const btn = document.createElement('button');
-            btn.textContent = item.title || 'Untitled';
-            btn.style.display = 'block';
-            btn.style.width = '100%';
-            btn.style.marginBottom = '10px';
-            btn.style.background = '#333';
-            btn.style.color = '#ff8800';
-            btn.style.border = '1px solid #444';
-            btn.style.borderRadius = '4px';
-            btn.style.padding = '10px';
-            btn.style.cursor = 'pointer';
-            btn.onmouseover = () => btn.style.background = '#444';
-            btn.onmouseout = () => btn.style.background = '#333';
-            btn.onclick = () => displayNewsDetails(idx);
-            container.appendChild(btn);
-        });
-    }
-
-    function displayNewsDetails(idx) {
-        const item = newsList[idx];
-        if (!item) return;
-        document.getElementById('newsDetails').innerHTML = `
-            <div style="font-size:1.1em; font-weight:bold; color:#ff8800; margin-bottom:8px;">${item.title}</div>
-            <div style="color:#aaa; margin-bottom:8px;">${item.source || ''}</div>
-            <div style="color:#fff;">${item.description || ''}</div>
-        `;
-    }
-    
-    // Fetch stocks
-    async function fetchStocks() {
-        try {
-            const response = await fetch(`${SERVER_URL}/api/stocks`);
-            const data = await response.json();
-            if (data && data.stocks) {
-                displayStocks(data.stocks);
-            } else {
-                displayStocks(data);
-            }
-        } catch (error) {
-            console.error('Error fetching stocks:', error);
-            document.getElementById('stocksContainer').innerHTML = '<p style="color: #ff4444;">Error loading stocks</p>';
-            }
-    }
-    
-    // Display stocks
-    function displayStocks(stocks) {
-        const container = document.getElementById('stocksContainer');
-        
-        if (!stocks || stocks.length === 0) {
-            container.innerHTML = '<p>No stocks available.</p>';
-            return;
-        }
-        
-        container.innerHTML = stocks.map(stock => {
-            const symbol = stock.symbol || stock.stockSymbol || 'N/A';
-            const name = stock.name || 'N/A';
-            
-            let price = 0, change = 0, changePercent = 0, volume = 0;
-            
-            if (stock.quote) {
-                price = stock.quote.last_price || stock.quote.ltp || 0;
-                change = stock.quote.change || 0;
-                changePercent = stock.quote.change_percent || 0;
-                volume = stock.quote.volume || 0;
-            }
-            
-            return `
-                <div class="stock-item">
-                    <div class="stock-symbol">${symbol}</div>
-                    <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">${name}</div>
-                    <div class="stock-price">$${parseFloat(price).toFixed(2)}</div>
-                    <div class="stock-change ${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
-                        ${parseFloat(change) >= 0 ? '+' : ''}${parseFloat(change).toFixed(2)} (${parseFloat(changePercent).toFixed(2)}%)
-                    </div>
-                    <div style="font-size: 0.8em; color: #888; margin-top: 5px;">
-                        Volume: ${parseInt(volume).toLocaleString()}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    // Display news
-    function displayNews(news) {
-        const container = document.getElementById('newsContainer');
-        container.innerHTML = news.map(item => `
-            <div class="news-item">
-                <div class="news-title">${item.title}</div>
-                <div class="news-source">${item.source} - ${item.pubDate}</div>
-                <div style="margin-top: 5px; font-size: 0.9em;">${item.description.substring(0, 100)}...</div>
-            </div>
-        `).join('');
-    }
-    
-    function clearData() {
-        document.getElementById('stocksContainer').innerHTML = '<p>Data cleared.</p>';
-        document.getElementById('newsContainer').innerHTML = '<p>Data cleared.</p>';
-        // document.getElementById('tickContainer').innerHTML = '<p>Click "Connect Socket.IO" to receive real-time data...</p>'; // This line is removed
-    }
-    
-    // Initialize
     checkServerStatus();
-    setInterval(checkServerStatus, 5000);
-</script>
+  </script>
 </body>
 </html>
