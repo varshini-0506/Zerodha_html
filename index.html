@@ -96,6 +96,47 @@
     .user-input button:hover {
       background-color: #00cc6a;
     }
+    #newsTitles > div {
+      cursor: pointer;
+      padding: 10px 8px;
+      border-bottom: 1px solid #eee;
+      color: #1a73e8;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+    #newsTitles > div:hover {
+      background: #f0f4fa;
+      color: #174ea6;
+    }
+    #newsTitlesCard, #newsDetailsCard {
+      background: #23272f;
+      color: #f5f7fa;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      padding: 28px 28px 20px 28px;
+    }
+    #newsCardsRow {
+      margin-bottom: 32px;
+      gap: 48px;
+    }
+    @media (max-width: 900px) {
+      #newsCardsRow { flex-direction: column; gap: 20px; }
+      #newsTitlesCard, #newsDetailsCard { max-width: 100%; min-width: 0; }
+    }
+    #newsTitles > div {
+      background: transparent;
+      color: #1a73e8;
+    }
+    #newsTitles > div:hover {
+      background: #2d323c;
+      color: #90caf9;
+    }
+    #newsTitlesCard h2, #newsDetailsCard h2 {
+      color: #90caf9;
+    }
   </style>
 </head>
 <body>
@@ -125,15 +166,15 @@
     </div>
   </div>
 
-  <!-- News Section (unchanged) -->
-  <div id="newsSection" style="display:none; margin-top: 30px; display: flex; gap: 48px; height: 40vh;">
-    <div id="newsTitlesCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-      <h3 style="color:#ff8800; font-size:1.5em;">News Titles</h3>
-      <div id="newsTitles"></div>
+  <!-- News Section: Two cards in a row, equal size, improved UI -->
+  <div id="newsCardsRow" style="display: flex; gap: 32px; margin-top: 24px; align-items: stretch;">
+    <div class="card" id="newsTitlesCard" style="flex:1; max-width: 420px; min-width: 280px; overflow-y: auto; max-height: 420px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+      <h2 style="margin-bottom: 12px;">News Titles</h2>
+      <div id="newsTitles" style="display: flex; flex-direction: column; gap: 0;"></div>
     </div>
-    <div id="newsDetailsCard" style="background:#222; padding:32px; border-radius:12px; flex:1; height:100%; overflow-y:auto;">
-      <h3 style="color:#00aaff; font-size:1.5em;">News Details</h3>
-      <div id="newsDetails" style="min-height:100px;">Select a news title to view details.</div>
+    <div class="card" id="newsDetailsCard" style="flex:1; max-width: 420px; min-width: 280px; overflow-y: auto; max-height: 420px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+      <h2 style="margin-bottom: 12px;">News Details</h2>
+      <div id="newsDetails">Click a news title to view details.</div>
     </div>
   </div>
 
@@ -302,6 +343,52 @@
         `;
         container.appendChild(stockDiv);
       });
+    }
+
+    // Fetch and display news in two cards: titles and details
+    async function fetchNews() {
+      try {
+        const response = await fetch(`${SERVER_URL}/api/news`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        const newsTitles = document.getElementById('newsTitles');
+        const newsDetails = document.getElementById('newsDetails');
+        if (!newsTitles || !newsDetails) return;
+        if (data && data.news && data.news.length > 0) {
+          // Store news list for click handler
+          window._newsList = data.news;
+          newsTitles.innerHTML = data.news.map((item, idx) =>
+            `<div onclick="showNewsDetails(${idx})">${item.title}</div>`
+          ).join('');
+          newsDetails.innerHTML = 'Click a news title to view details.';
+        } else {
+          newsTitles.innerHTML = '<p style="color:#ff8800;">No news found.</p>';
+          newsDetails.innerHTML = '';
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        const newsTitles = document.getElementById('newsTitles');
+        const newsDetails = document.getElementById('newsDetails');
+        if (newsTitles) newsTitles.innerHTML = '<p style="color:#ff4444;">Error loading news</p>';
+        if (newsDetails) newsDetails.innerHTML = '';
+      }
+    }
+
+    // Show details for a selected news item
+    function showNewsDetails(idx) {
+      const newsDetails = document.getElementById('newsDetails');
+      const newsList = window._newsList || [];
+      const item = newsList[idx];
+      if (!item) {
+        newsDetails.innerHTML = '<p style="color:#ff4444;">No details found.</p>';
+        return;
+      }
+      newsDetails.innerHTML = `
+        <div style="font-weight:bold; color:#ff8800; margin-bottom:8px;">${item.title}</div>
+        <div style="font-size:0.9em; color:#aaa; margin-bottom:8px;">${item.source || ''} - ${item.pubDate || ''}</div>
+        <div style="margin-bottom:8px; color:#fff;">${item.description || ''}</div>
+        <a href="${item.link}" target="_blank" style="color:#1a73e8; font-size:0.9em;">Read more</a>
+      `;
     }
 
     checkServerStatus();
