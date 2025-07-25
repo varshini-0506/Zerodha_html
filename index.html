@@ -178,6 +178,13 @@
     </div>
   </div>
 
+  <!-- Stock Events Section -->
+  <div class="card" id="stockEventsCard" style="margin-top: 32px; background: #23272f; color: #f5f7fa; padding: 28px 28px 20px 28px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+    <h2 style="color: #90caf9; margin-bottom: 12px;">Stock Events</h2>
+    <button id="fetchEventsBtn" style="background: #1a73e8; color: #fff; border: none; border-radius: 6px; padding: 10px 22px; font-size: 1em; cursor: pointer; margin-bottom: 18px;">Fetch Events</button>
+    <div id="stockEventsContent" style="margin-top: 10px; min-height: 60px;"></div>
+  </div>
+
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script>
     const SERVER_URL ='https://zerodha-ay41.onrender.com';
@@ -390,6 +397,74 @@
         <a href="${item.link}" target="_blank" style="color:#1a73e8; font-size:0.9em;">Read more</a>
       `;
     }
+
+    // Fetch and display stock events for all wishlist stocks
+    async function fetchStockEvents() {
+      const content = document.getElementById('stockEventsContent');
+      if (!wishlistStocks || wishlistStocks.length === 0) {
+        content.innerHTML = '<span style="color:#ff8800;">No wishlist stocks found. Please fetch wishlist first.</span>';
+        return;
+      }
+      content.innerHTML = '<span style="color:#90caf9;">Loading events for all wishlist stocks...</span>';
+      const results = [];
+      for (const stock of wishlistStocks) {
+        const symbol = stock.symbol;
+        try {
+          const res = await fetch(`${SERVER_URL}/api/stock_events/${symbol}`);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          const data = await res.json();
+          results.push({ symbol, data });
+        } catch (err) {
+          results.push({ symbol, error: err.message });
+        }
+      }
+      // Render results
+      content.innerHTML = results.map(result => {
+        if (result.error) {
+          return `<div style=\"margin-bottom:18px;\"><strong style=\"color:#ff4444;\">${result.symbol}</strong>: <span style=\"color:#ff4444;\">${result.error}</span></div>`;
+        }
+        const d = result.data;
+        // Dividends
+        let dividends = '';
+        if (d.dividends_fmp && d.dividends_fmp.historical && d.dividends_fmp.historical.length > 0) {
+          dividends = `<div style=\"margin-bottom:8px;\"><strong style=\"color:#ffd600;\">Dividends</strong><ul style=\"margin:4px 0 0 16px;\">` +
+            d.dividends_fmp.historical.slice(0, 5).map(div =>
+              `<li>${div.label}: ₹${div.dividend} (Record: ${div.recordDate || '-'}, Pay: ${div.paymentDate || '-'})</li>`
+            ).join('') + '</ul></div>';
+        }
+        // Earnings
+        let earnings = '';
+        if (d.earnings_finnhub && d.earnings_finnhub.length > 0) {
+          earnings = `<div style=\"margin-bottom:8px;\"><strong style=\"color:#00ff88;\">Earnings</strong><ul style=\"margin:4px 0 0 16px;\">` +
+            d.earnings_finnhub.slice(0, 5).map(e =>
+              `<li>Q${e.quarter} ${e.year}: Actual ₹${e.actual}, Est. ₹${e.estimate} (${e.period})</li>`
+            ).join('') + '</ul></div>';
+        }
+        // Splits
+        let splits = '';
+        if (d.splits_fmp && d.splits_fmp.historical && d.splits_fmp.historical.length > 0) {
+          splits = `<div style=\"margin-bottom:8px;\"><strong style=\"color:#90caf9;\">Splits</strong><ul style=\"margin:4px 0 0 16px;\">` +
+            d.splits_fmp.historical.slice(0, 5).map(s =>
+              `<li>${s.label}: ${s.numerator}:${s.denominator}</li>`
+            ).join('') + '</ul></div>';
+        }
+        // IPOs
+        let ipos = '';
+        if (d.ipos_finnhub && d.ipos_finnhub.length > 0) {
+          ipos = `<div style=\"margin-bottom:8px;\"><strong style=\"color:#1a73e8;\">IPOs</strong><ul style=\"margin:4px 0 0 16px;\">` +
+            d.ipos_finnhub.slice(0, 3).map(i =>
+              `<li>${i.name} (${i.symbol}): ${i.date}, Price: ${i.price}, Shares: ${i.numberOfShares}</li>`
+            ).join('') + '</ul></div>';
+        }
+        if (!dividends && !earnings && !splits && !ipos) {
+          return `<div style=\"margin-bottom:18px;\"><strong style=\"color:#90caf9;\">${result.symbol}</strong>: <span style=\"color:#aaa;\">No events found.</span></div>`;
+        }
+        return `<div style=\"margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #333;\"><strong style=\"color:#90caf9; font-size:1.1em;\">${result.symbol}</strong>${dividends}${earnings}${splits}${ipos}</div>`;
+      }).join('');
+    }
+
+    // Attach event listener for the button
+    document.getElementById('fetchEventsBtn').onclick = fetchStockEvents;
 
     checkServerStatus();
   </script>
