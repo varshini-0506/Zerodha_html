@@ -213,16 +213,12 @@
             // Find the tick for this stock symbol (case-insensitive match for robustness)
             const tick = payload.data.find(t => t.symbol && t.symbol.toUpperCase() === stock.symbol.toUpperCase());
             if (tick) {
-              wishlistStocks[idx].quote = {
-                last_price: tick.last_price,
-                change: tick.change,
-                change_percent: stock.quote?.change_percent ?? null, // Keep previous if needed
-                volume: tick.volume,
-                high: tick.high,
-                low: tick.low,
-                open: tick.open,
-                close: tick.close
-              };
+              // Only update price, change, and change_percent from tick data
+              if (!wishlistStocks[idx].quote) wishlistStocks[idx].quote = {};
+              wishlistStocks[idx].quote.last_price = tick.last_price;
+              wishlistStocks[idx].quote.change = tick.change;
+              wishlistStocks[idx].quote.change_percent = stock.quote?.change_percent ?? null;
+              // Do NOT touch volume, high, low, open, close, or ohlc here
               // Debug: log the update
               console.log(`Updating ${stock.symbol}:`, wishlistStocks[idx].quote);
             } else {
@@ -283,10 +279,12 @@
         const change = stock.quote?.change ?? 'N/A';
         const changePercent = stock.quote?.change_percent?.toFixed(2) ?? 'N/A';
         const volume = stock.quote?.volume?.toLocaleString() ?? 'N/A';
-        const high = stock.quote?.high ?? stock.high ?? 'N/A';
-        const low = stock.quote?.low ?? stock.low ?? 'N/A';
-        const open = stock.quote?.open ?? stock.open ?? 'N/A';
-        const close = stock.quote?.close ?? stock.close ?? 'N/A';
+        // Extract OHLC from quote.ohlc if present
+        const ohlc = stock.quote?.ohlc || {};
+        const high = ohlc.high ?? stock.quote?.high ?? stock.high ?? 'N/A';
+        const low = ohlc.low ?? stock.quote?.low ?? stock.low ?? 'N/A';
+        const open = ohlc.open ?? stock.quote?.open ?? stock.open ?? 'N/A';
+        const close = ohlc.close ?? stock.quote?.close ?? stock.close ?? 'N/A';
         const changeColor = typeof stock.quote?.change === 'number' ? (stock.quote.change >= 0 ? '#00ff88' : '#ff4444') : '#fff';
 
         stockDiv.innerHTML = `
